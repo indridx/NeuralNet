@@ -34,3 +34,5 @@
 # VSCode files
 *.code-workspace
 
+# Other files
+*.csv
