@@ -14,10 +14,11 @@ typedef struct Neuron {
 } Neuron;
 
 /**
- * @brief Creates neuron of given type.
+ * @brief Initializes neuron for specific activation function.
  * 
- * @param type 
- * @return Neuron 
+ * @param p_neuron Pointer to neuron
+ * @param type NEURON_TYPE
+ * @return int Return 0 if succeeeded, else if not. 
  */
-Neuron initNeuron(NeuronType type);
+int initNeuron(Neuron *p_neuron, NeuronType type);
 #endif

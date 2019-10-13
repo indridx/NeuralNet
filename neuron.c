@@ -17,25 +17,30 @@ void hyperTanFunction(Neuron *p_neuron, double input) {
 }
 
 
-Neuron initNeuron(NeuronType type) {
-    Neuron neuron;
-    neuron.type = type;
-    neuron.value = 0;
+int initNeuron(Neuron *p_neuron, NeuronType type) {
+    if (NULL == p_neuron) {
+        return -1;  // Neuron is not initialized so fail.
+    }
+
+    p_neuron->type = type;
+    p_neuron->value = 0;
 
     switch (type) {
         case NEURON_HYPERTAN:
-            neuron.activate = hyperTanFunction;   // Set to sigmoid function
+            p_neuron->activate = hyperTanFunction;   // Set to sigmoid function
             break;
+
         case NEURON_SIGMOID:
-            neuron.activate = sigmoidFunction;   // Set to sigmoid function
+            p_neuron->activate = sigmoidFunction;   // Set to sigmoid function
             break;
+
         case NEURON_DEFAULT:
         default:
-            neuron.activate = defaultFunction;   // Set to default in case of default type or undefined type value
+            p_neuron->activate = defaultFunction;   // Set to default in case of default type or undefined type value
             break;
     }
 
-    return neuron;
+    return 0;   // Ran successfully.
 }
 
 int freeNeuron(Neuron *p_neuron) {
