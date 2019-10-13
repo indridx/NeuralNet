@@ -44,5 +44,11 @@ int initNeuron(Neuron *p_neuron, NeuronType type) {
 }
 
 int freeNeuron(Neuron *p_neuron) {
+    if (NULL == p_neuron) {
+        return -1;  // Neuron is not initialized so fail.
+    }
+
     free(p_neuron);
+
+    return 0;   // Ran successfully.
 }
