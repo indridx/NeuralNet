@@ -11,11 +11,11 @@ typedef struct {
     double ***weights;      // Inter-layer 3d weights
     // double *weights;      // Inter-layer 1d weights
     double **bias;          // Neuron bias values
-    Neuron **neuron;  // Neurons
+    Neuron **neurons;  // Neurons
 } Network;
 
 
-void initNetwork(Network *p_net, int depth, int *stack, int numInputs, double **inWeights, double ***weights, double **bias);
+int initNetwork(Network *p_net, NeuronType **types, int depth, int *stack, int numInputs, double **inWeights, double ***weights, double **bias);
 
 void loadNetwork(const char *fileName);
 

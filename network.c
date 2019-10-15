@@ -7,7 +7,11 @@
 // #include "train.h"
 
 
-void initNetwork(Network *p_net, int depth, int *stack, int numInputs, double **inWeights, double ***weights, double **bias) {
+int initNetwork(Network *p_net, NeuronType **types, int depth, int *stack, int numInputs, double **inWeights, double ***weights, double **bias) {
+	if (NULL == p_net) {
+        return -1;  // Neuron is not initialized so fail.
+    }
+
     // Amount of layers
 	p_net->depth = depth;
 
@@ -15,12 +19,17 @@ void initNetwork(Network *p_net, int depth, int *stack, int numInputs, double **
 	p_net->stack = malloc(depth * sizeof(int));
     memcpy(p_net->stack, stack, depth * sizeof(int));
 
+	// Amount of inputs to network
+	p_net->numInputs = numInputs;
+
 	// ! 2D array allocation for input weight matrix
 	p_net->inWeights = (double **) malloc(stack[0] * sizeof(double *));
 	for (int outputNeuron = 0; outputNeuron < stack[0]; outputNeuron++) {
 		p_net->inWeights[outputNeuron] = (double *) malloc(numInputs * sizeof(double));
 	}
-	if (NULL == inWeights) { // Random initialization if no weights given, othwerise transfer
+	if (NULL == inWeights) {
+		// Random initialization if no weights given, othwerise transfer
+
 		srand(time(0)); // Generate random sequence given time seed
 
 		for (int outputNeuron = 0; outputNeuron < stack[0]; outputNeuron++) {
@@ -29,6 +38,8 @@ void initNetwork(Network *p_net, int depth, int *stack, int numInputs, double **
 			}
 		}
 	} else {
+		// Transfer data, didn't use memcpy b/c performance doesn't matter for this part
+
 		for (int outputNeuron = 0; outputNeuron < stack[0]; outputNeuron++) {
 			for (int input = 0; input < numInputs; input++) {
 				p_net->inWeights[outputNeuron][input] = inWeights[outputNeuron][input];
@@ -45,7 +56,9 @@ void initNetwork(Network *p_net, int depth, int *stack, int numInputs, double **
 			p_net->weights[inputLayer][outputNeuron] = (double *) malloc(stack[inputLayer] * sizeof(double));
 		}
 	}
-    if (NULL == weights) { // Random initialization if no weights given, othwerise transfer
+    if (NULL == weights) {
+		// Random initialization if no weights given, othwerise transfer
+
 		srand(time(0)); // Generate random sequence given time seed
 		
 		// Init random weights
@@ -58,6 +71,7 @@ void initNetwork(Network *p_net, int depth, int *stack, int numInputs, double **
 			}
 		}
 	} else {
+
 		// Transfer data, didn't use memcpy b/c performance doesn't matter for this part
 		for (int layer = 0; layer < depth - 1; layer++) {
 			for (int i = 0; stack[layer + 1]; i++) {
@@ -73,7 +87,9 @@ void initNetwork(Network *p_net, int depth, int *stack, int numInputs, double **
 	for (int layer = 0; layer < depth; layer++) {
 		p_net->bias = (double *) malloc(stack[layer] * sizeof(double));
 	}
-	if (NULL == bias) { // Random initialization if no bias given, othwerise transfer
+	if (NULL == bias) {
+		// Random initialization if no bias given, othwerise transfer
+		
 		srand(time(0)); // Generate random sequence given time seed
 
 		for (int layer = 0; layer < depth; layer++) {
@@ -82,12 +98,39 @@ void initNetwork(Network *p_net, int depth, int *stack, int numInputs, double **
 			}
 		}
 	} else {
+		// Transfer data, didn't use memcpy b/c performance doesn't matter for this part
+
 		for (int layer = 0; layer < depth; layer++) {
 			for (int neuron = 0; neuron < stack[layer]; neuron++) {
 				p_net->bias[layer][neuron] = bias[layer][neuron];
 			}
 		}	
 	}
+
+	// ! 2D array allocation for neuron types
+	p_net->neurons = (Neuron **) malloc(depth * sizeof(Neuron *));
+	for (int layer = 0; layer < depth; layer++) {
+		p_net->bias = (Neuron *) malloc(stack[layer] * sizeof(Neuron));
+	}
+	if (NULL == types) {
+		// Default initialization if no types given, othwerise transfer
+
+		for (int layer = 0; layer < depth; layer++) {
+			for (int neuron = 0; neuron < stack[layer]; neuron++) {
+				initNeuron(&p_net->neurons[layer][neuron], NEURON_DEFAULT);
+			}
+		}
+	} else {
+		// Transfer data, didn't use memcpy b/c performance doesn't matter for this part
+
+		for (int layer = 0; layer < depth; layer++) {
+			for (int neuron = 0; neuron < stack[layer]; neuron++) {
+				initNeuron(&p_net->neurons[layer][neuron], types[layer][neuron]);
+			}
+		}
+	}
+
+	return 0; // Ran successfully
 }
 
 void loadNetwork(const char *fileName) {
@@ -96,13 +139,28 @@ void loadNetwork(const char *fileName) {
 
 void runNetwork(Network *p_net, double *inputs) {
 	for (int neuron = 0; neuron < p_net->stack[0]; neuron++) {
+		// Calculated weighted sum going into neuron
+		double weightedSum = 0;
+		for (int input = 0; input < p_net->numInputs; input++) {
+			weightedSum += p_net->inWeights[neuron][input] *  inputs[input];
+		}
 
+		// Apply neuron activation function on weighted input sum to get neuron value
+		p_net->neurons[0][neuron].activate(&p_net->neurons[0][neuron], weightedSum);
 	}
 
 	// Iterate through neural network layers
-	for (int layer = 1; layer < p_net->depth; layer++) {
+	for (int layer = 1; layer < p_net->depth; layer++) {		
+		for (int outputNeuron = 0; outputNeuron < p_net->stack[layer]; outputNeuron++) {
+			// Calculated weighted sum going into neuron
+			double weightedSum = 0;
+			for (int inputNeuron = 0; inputNeuron < p_net->numInputs; inputNeuron++) {
+				weightedSum += p_net->inWeights[outputNeuron][inputNeuron] *  inputs[inputNeuron];
+			}
 
-		
+			// Apply neuron activation function on weighted input sum to get neuron value
+			p_net->neurons[layer][outputNeuron].activate(&p_net->neurons[layer][outputNeuron], weightedSum);
+		}
 	}
 }
 
@@ -116,4 +174,8 @@ void displayNetwork(Network* p_net) {
 			printf("\n");
 		}
 	}
+}
+
+void freeNetwork(Network *p_net) {
+
 }
