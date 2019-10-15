@@ -142,7 +142,7 @@ void runNetwork(Network *p_net, double *inputs) {
 		// Calculated weighted sum going into neuron
 		double weightedSum = 0;
 		for (int input = 0; input < p_net->numInputs; input++) {
-			weightedSum += p_net->inWeights[neuron][input] *  inputs[input];
+			weightedSum += p_net->inWeights[neuron][input] * inputs[input];
 		}
 
 		// Apply neuron activation function on weighted input sum to get neuron value
@@ -150,16 +150,16 @@ void runNetwork(Network *p_net, double *inputs) {
 	}
 
 	// Iterate through neural network layers
-	for (int layer = 1; layer < p_net->depth; layer++) {		
-		for (int outputNeuron = 0; outputNeuron < p_net->stack[layer]; outputNeuron++) {
+	for (int layer = 0; layer < p_net->depth - 1; layer++) {		
+		for (int outputNeuron = 0; outputNeuron < p_net->stack[layer + 1]; outputNeuron++) {
 			// Calculated weighted sum going into neuron
 			double weightedSum = 0;
-			for (int inputNeuron = 0; inputNeuron < p_net->numInputs; inputNeuron++) {
-				weightedSum += p_net->inWeights[outputNeuron][inputNeuron] *  inputs[inputNeuron];
+			for (int inputNeuron = 0; inputNeuron < p_net->stack[layer]; inputNeuron++) {
+				weightedSum += p_net->weights[layer][outputNeuron][inputNeuron] * p_net->neurons[layer][inputNeuron].value;
 			}
 
 			// Apply neuron activation function on weighted input sum to get neuron value
-			p_net->neurons[layer][outputNeuron].activate(&p_net->neurons[layer][outputNeuron], weightedSum);
+			p_net->neurons[layer + 1][outputNeuron].activate(&p_net->neurons[layer + 1][outputNeuron], weightedSum);
 		}
 	}
 }
