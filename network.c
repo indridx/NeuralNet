@@ -12,6 +12,8 @@ int initNetwork(Network *p_net, NeuronType **types, int depth, int *stack, int n
         return -1;  // Neuron is not initialized so fail.
     }
 
+	srand(time(0)); // Generate random sequence given time seed
+
     // Amount of layers
 	p_net->depth = depth;
 
@@ -29,8 +31,6 @@ int initNetwork(Network *p_net, NeuronType **types, int depth, int *stack, int n
 	}
 	if (NULL == inWeights) {
 		// Random initialization if no weights given, othwerise transfer
-
-		srand(time(0)); // Generate random sequence given time seed
 
 		for (int outputNeuron = 0; outputNeuron < stack[0]; outputNeuron++) {
 			for (int input = 0; input < numInputs; input++) {
@@ -58,8 +58,6 @@ int initNetwork(Network *p_net, NeuronType **types, int depth, int *stack, int n
 	}
     if (NULL == weights) {
 		// Random initialization if no weights given, othwerise transfer
-
-		srand(time(0)); // Generate random sequence given time seed
 		
 		// Init random weights
 		for (int layer = 0; layer < depth - 1; layer++) {
@@ -85,12 +83,10 @@ int initNetwork(Network *p_net, NeuronType **types, int depth, int *stack, int n
 	// ! 2D array allocation for bias input matrix
 	p_net->bias = (double **) malloc(depth * sizeof(double *));
 	for (int layer = 0; layer < depth; layer++) {
-		p_net->bias = (double *) malloc(stack[layer] * sizeof(double));
+		p_net->bias[layer] = (double *) malloc(stack[layer] * sizeof(double));
 	}
 	if (NULL == bias) {
 		// Random initialization if no bias given, othwerise transfer
-		
-		srand(time(0)); // Generate random sequence given time seed
 
 		for (int layer = 0; layer < depth; layer++) {
 			for (int neuron = 0; neuron < stack[layer]; neuron++) {
@@ -110,7 +106,7 @@ int initNetwork(Network *p_net, NeuronType **types, int depth, int *stack, int n
 	// ! 2D array allocation for neuron types
 	p_net->neurons = (Neuron **) malloc(depth * sizeof(Neuron *));
 	for (int layer = 0; layer < depth; layer++) {
-		p_net->bias = (Neuron *) malloc(stack[layer] * sizeof(Neuron));
+		p_net->neurons[layer] = (Neuron *) malloc(stack[layer] * sizeof(Neuron));
 	}
 	if (NULL == types) {
 		// Default initialization if no types given, othwerise transfer
@@ -133,6 +129,10 @@ int initNetwork(Network *p_net, NeuronType **types, int depth, int *stack, int n
 	return 0; // Ran successfully
 }
 
+void saveNetwork(const char *fileName) {
+
+}
+
 void loadNetwork(const char *fileName) {
     
 }
@@ -144,6 +144,7 @@ void runNetwork(Network *p_net, double *inputs) {
 		for (int input = 0; input < p_net->numInputs; input++) {
 			weightedSum += p_net->inWeights[neuron][input] * inputs[input];
 		}
+		weightedSum += p_net->bias[0][neuron];
 
 		// Apply neuron activation function on weighted input sum to get neuron value
 		p_net->neurons[0][neuron].activate(&p_net->neurons[0][neuron], weightedSum);
@@ -157,6 +158,7 @@ void runNetwork(Network *p_net, double *inputs) {
 			for (int inputNeuron = 0; inputNeuron < p_net->stack[layer]; inputNeuron++) {
 				weightedSum += p_net->weights[layer][outputNeuron][inputNeuron] * p_net->neurons[layer][inputNeuron].value;
 			}
+			weightedSum += p_net->bias[layer][outputNeuron];
 
 			// Apply neuron activation function on weighted input sum to get neuron value
 			p_net->neurons[layer + 1][outputNeuron].activate(&p_net->neurons[layer + 1][outputNeuron], weightedSum);
@@ -165,17 +167,58 @@ void runNetwork(Network *p_net, double *inputs) {
 }
 
 void displayNetwork(Network* p_net) {
-	for (int layer = 0; layer < p_net->weights - 1; layer++) {
-		printf("\nLayer: %d\n------------------------------------------------------------------\n", layer);
-		for (int i = 0; i < p_net->stack[layer + 1]; i++) {
-			for (int j = 0; j < p_net->stack[layer]; j++) {
-				printf("%1.8f   |   ", p_net->weights[layer][i][j]);
+	printf("Input Weights\nLayer: 0 <- inputs:\n");
+	for (int outputNeuron = 0; outputNeuron < p_net->stack[0]; outputNeuron++) {
+		for (int input = 0; input < p_net->numInputs; input++) {
+			printf("%1.8f   |   ", p_net->inWeights[outputNeuron][input]);
+		}
+		printf("\n");
+	}
+
+	printf("\n\n\n######################################\n");
+	printf("Inter-Layer Weights:");
+	for (int layer = 0; layer < p_net->depth - 1; layer++) {
+		printf("\nLayer: %d <- %d\n------------------------------------------------------------------\n", layer + 1, layer);
+		for (int outputNeuron = 0; outputNeuron < p_net->stack[layer + 1]; outputNeuron++) {
+			for (int inputNeuron = 0; inputNeuron < p_net->stack[layer]; inputNeuron++) {
+				printf("%1.8f   |   ", p_net->weights[layer][outputNeuron][inputNeuron]);
 			}
 			printf("\n");
 		}
 	}
+
+	printf("\n\n\n######################################\n");
+	printf("Neuron Bias:");
+
+	for (int layer = 0; layer < p_net->depth; layer++) {
+		printf("\nLayer: %d\n------------------------------------------------------------------\n", layer);
+		for (int neuron = 0; neuron < p_net->stack[0]; neuron++) {
+			printf("%1.8f   |   ", p_net->bias[layer][neuron]);
+		}
+		printf("\n");
+	}
+
+	printf("\n\n\n######################################\n");
+	printf("Neuron Values:\n");
+
+	for (int layer = 0; layer < p_net->depth; layer++) {
+		printf("Layer: %d\n------------------------------------------------------------------\n", layer);
+		for (int neuron = 0; neuron < p_net->stack[0]; neuron++) {
+			printf("%1.8f   |   ", p_net->neurons[layer][neuron].value);
+		}
+		printf("\n\n");
+	}
 }
 
-void freeNetwork(Network *p_net) {
+int freeNetwork(Network *p_net) {
+	if (NULL == p_net) {
+		return -1;
+	}
 
+	// TODO: Free everything inside
+
+
+	free(p_net);
+
+	return 0;
 }
