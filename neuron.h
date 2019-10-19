@@ -10,7 +10,7 @@ typedef enum {
 typedef struct Neuron {
     double value;                       // Neuron activated value
     NeuronType type;                    // Neuron type, determining activation function
-    void (*activate) (Neuron *self);    // Run activation function on neuron
+    void (*activate) (struct Neuron *self, double input);    // Run activation function on neuron
 } Neuron;
 
 /**
