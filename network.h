@@ -18,7 +18,7 @@ typedef struct {
 /**
  * @brief Initializes network based on given parameters.
  * 
- * @param p_net Pointer to network to be intialized.
+ * @param p_network Pointer to network to be intialized.
  * @param types 2D array corresponding to types of neurons in network.
  * @param depth Amount of layers in array, excluding inputs.
  * @param stack 1D array of length (depth) describing amount of neurons per layer.
@@ -28,7 +28,7 @@ typedef struct {
  * @param bias 2D array of bias levels for each neuron.
  * @return int Return -1 if fail, 0 if pass.
  */
-int initNetwork(Network *p_net, NeuronType **types, int depth, int *stack, int numInputs, double **inWeights, double ***weights, double **bias);
+int initNetwork(Network *p_network, NeuronType **types, int depth, int *stack, int numInputs, double **inWeights, double ***weights, double **bias);
 
 /**
  * @brief Loads network data from csv save file.
@@ -47,24 +47,24 @@ void saveNetwork(const char *fileName);
 /**
  * @brief Calculates neuron levels.
  * 
- * @param p_net 
+ * @param p_network 
  * @param inputs 
  */
-void runNetwork(Network *p_net, double *inputs);
+void runNetwork(Network *p_network, double *inputs);
 
 /**
  * @brief Displays network data in terminal.
  * 
- * @param p_net Pointer to network to be displayed.
+ * @param p_network Pointer to network to be displayed.
  */
-void displayNetwork(Network* p_net);
+void displayNetwork(Network* p_network);
 
 /**
  * @brief Frees allocated memory for network.
  * 
- * @param p_net Pointer to network to be freed. 
+ * @param p_network Pointer to network to be freed. 
  * @return int 
  */
-int freeNetwork(Network *p_net);
+int freeNetwork(Network *p_network);
 
 #endif
