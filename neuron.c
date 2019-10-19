@@ -10,11 +10,11 @@ void sigmoidFunction(Neuron *p_neuron, double input) {
 }
 
 void hyperTanFunction(Neuron *p_neuron, double input) {
-    p_neuron->value = (exp(input) + exp(-input)) / (exp(input) + exp(-input));
+    p_neuron->value = (exp(input) - exp(-input)) / (exp(input) + exp(-input));
 }
 
 // Define default function!
-void (*defaultFunction)(Neuron *p_neuron, double input) = sigmoidFunction;
+void (*defaultFunction)(Neuron *p_neuron, double input) = hyperTanFunction;
 
 
 int initNeuron(Neuron *p_neuron, NeuronType type) {
