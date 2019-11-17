@@ -138,6 +138,8 @@ void loadNetwork(const char *fileName) {
 }
 
 void runNetwork(Network *p_network, double *inputs) {
+	int test[p_network->depth];
+
 	for (int neuron = 0; neuron < p_network->stack[0]; neuron++) {
 		// Calculated weighted sum going into neuron
 		double weightedSum = 0;

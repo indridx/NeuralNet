@@ -14,7 +14,7 @@ void hyperTanFunction(Neuron *p_neuron, double input) {
 }
 
 // Define default function!
-void (*defaultFunction)(Neuron *p_neuron, double input) = hyperTanFunction;
+void (*defaultFunction)(Neuron *p_neuron, double input) = sigmoidFunction;
 
 
 int initNeuron(Neuron *p_neuron, NeuronType type) {

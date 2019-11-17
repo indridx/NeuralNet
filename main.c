@@ -23,5 +23,15 @@ void main(int argc, char **argv) {
         // TODO: Run on dataset
     }
 
-    
+    Network network;
+    int stack[] = {3, 3, 3};
+    double input[] = {0.0, 0.0, 0.0};
+
+    initNetwork(&network, NULL, 3, stack, 3, NULL, NULL, NULL);
+
+    runNetwork(&network, input);
+
+    displayNetwork(&network);
+
+
 }
